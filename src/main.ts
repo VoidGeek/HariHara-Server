@@ -3,9 +3,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { ParseIdPipe } from './common/pipes/parse-id.pipe'; // Import your ParseIdPipe
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(new ParseIdPipe()); // Apply ParseIdPipe globally
 
   // Apply global validation for request bodies
   app.useGlobalPipes(

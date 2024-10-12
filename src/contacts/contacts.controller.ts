@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
 import { PrismaExceptionFilter } from '../common/filters/prisma-exception.filter';
-import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 
 @Controller('contacts')
 @UseFilters(PrismaExceptionFilter)
@@ -23,7 +22,7 @@ export class ContactsController {
   }
 
   @Get(':id')
-  async getContactById(@Param('id', ParseIdPipe) id: number) {
+  async getContactById(@Param('id') id: number) {
     return this.contactsService.getContactById(id);
   }
 
@@ -33,15 +32,12 @@ export class ContactsController {
   }
 
   @Patch(':id')
-  async updateContact(
-    @Param('id', ParseIdPipe) id: number,
-    @Body() contactData: any,
-  ) {
+  async updateContact(@Param('id') id: number, @Body() contactData: any) {
     return this.contactsService.updateContact(id, contactData);
   }
 
   @Delete(':id')
-  async deleteContact(@Param('id', ParseIdPipe) id: number) {
+  async deleteContact(@Param('id') id: number) {
     return this.contactsService.deleteContact(id);
   }
 }
