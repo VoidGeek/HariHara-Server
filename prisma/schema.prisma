@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Roles {
+  role_id   Int     @id @default(autoincrement())
+  role_name String
+  Users     Users[]
+}
+
+model Users {
+  user_id          Int    @id @default(autoincrement())
+  name             String
+  email            String @unique
+  phone            String
+  password         String
+  role_id          Int
+  profile_image_id Int?
+
+  Role            Roles             @relation(fields: [role_id], references: [role_id])
+  Image           Images?           @relation(fields: [profile_image_id], references: [image_id])
+  Orders          Orders[]
+  DonationRecords DonationRecords[]
+}
+
+model Sevas {
+  seva_id     Int     @id @default(autoincrement())
+  name        String
+  description String
+  base_price  Decimal
+
+  OrderDetails OrderDetails[]
+}
+
+model Orders {
+  order_id     Int      @id @default(autoincrement())
+  user_id      Int
+  order_date   DateTime
+  status       String
+  total_amount Decimal
+
+  User            Users            @relation(fields: [user_id], references: [user_id])
+  OrderDetails    OrderDetails[]
+  Receipts        Receipts?
+  Acknowledgments Acknowledgments?
+}
+
+model OrderDetails {
+  order_detail_id Int     @id @default(autoincrement())
+  order_id        Int
+  seva_id         Int
+  quantity        Int
+  price           Decimal
+
+  Orders Orders @relation(fields: [order_id], references: [order_id])
+  Sevas  Sevas  @relation(fields: [seva_id], references: [seva_id])
+}
+
+model Receipts {
+  receipt_id          Int      @id @default(autoincrement())
+  order_id            Int      @unique
+  receipt_number      String
+  amount_paid         Decimal
+  payment_date        DateTime
+  payment_status      String
+  razorpay_payment_id String?
+
+  Orders          Orders            @relation(fields: [order_id], references: [order_id])
+  Payments        Payments[]
+  DonationRecords DonationRecords[] // Added opposite relation for DonationRecords
+}
+
+model Acknowledgments {
+  acknowledgment_id     Int      @id @default(autoincrement())
+  order_id              Int      @unique
+  acknowledgment_number String
+  acknowledged_date     DateTime
+  message               String?
+
+  Orders Orders @relation(fields: [order_id], references: [order_id])
+}
+
+model DonationRecords {
+  donation_record_id Int      @id @default(autoincrement())
+  user_id            Int
+  donation_amount    Decimal
+  donation_date      DateTime
+  certificate_number String
+  tax_deductible     Boolean
+  receipt_id         Int?
+
+  User     Users     @relation(fields: [user_id], references: [user_id])
+  Receipts Receipts? @relation(fields: [receipt_id], references: [receipt_id])
+}
+
+model Payments {
+  payment_id          Int      @id @default(autoincrement())
+  receipt_id          Int
+  amount              Decimal
+  payment_date        DateTime
+  payment_status      String
+  razorpay_payment_id String?
+
+  Receipts Receipts @relation(fields: [receipt_id], references: [receipt_id])
+}
+
+model Images {
+  image_id     Int     @id @default(autoincrement())
+  supabase_url String
+  alt_text     String?
+
+  Users             Users[]
+  ImageAssociations ImageAssociations[]
+}
+
+model ImageAssociations {
+  association_id Int    @id @default(autoincrement())
+  image_id       Int
+  entity_id      Int
+  entity_type    String
+
+  Images  Images  @relation(fields: [image_id], references: [image_id])
+  Gallery Gallery @relation(fields: [entity_id], references: [gallery_id]) // Define the relation to Gallery
+}
+
+model Gallery {
+  gallery_id  Int      @id @default(autoincrement())
+  title       String
+  description String
+  created_at  DateTime
+
+  ImageAssociations ImageAssociations[] // This references ImageAssociations
+}
+
+model Contacts {
+  contact_id  Int    @id @default(autoincrement())
+  name        String  // New name field
+  address     String
+  city        String
+  state       String
+  postal_code String
+  country     String
+  phone       String
+}
+
