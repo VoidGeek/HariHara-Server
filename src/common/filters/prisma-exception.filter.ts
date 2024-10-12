@@ -13,15 +13,26 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = exception.message;
+    const errorMapping: Record<
+      string,
+      { status: HttpStatus; message: string }
+    > = {
+      P2025: { status: HttpStatus.NOT_FOUND, message: 'Record not found' },
+      P2002: {
+        status: HttpStatus.CONFLICT,
+        message: 'Unique constraint failed',
+      },
+      P2003: {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Foreign key constraint failed',
+      },
+      // Add more Prisma error codes as needed
+    };
 
-    // Handle specific Prisma error codes
-    if (exception.code === 'P2025') {
-      // Record not found error
-      status = HttpStatus.NOT_FOUND;
-      message = 'Record not found';
-    }
+    const { status, message } = errorMapping[exception.code] || {
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'An unexpected error occurred',
+    };
 
     response.status(status).json({
       statusCode: status,

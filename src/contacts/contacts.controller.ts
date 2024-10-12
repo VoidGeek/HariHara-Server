@@ -2,28 +2,29 @@ import {
   Controller,
   Get,
   Post,
-  Put,
+  Patch,
   Delete,
   Param,
   Body,
   UseFilters,
 } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
-import { PrismaExceptionFilter } from '../common/filters/prisma-exception.filter'; // Adjust the path if needed
+import { PrismaExceptionFilter } from '../common/filters/prisma-exception.filter';
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 
 @Controller('contacts')
-@UseFilters(PrismaExceptionFilter) // Use filter locally for this controller
+@UseFilters(PrismaExceptionFilter)
 export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
 
   @Get()
-  async getAllContacts() {
+  async getContacts() {
     return this.contactsService.getContacts();
   }
 
   @Get(':id')
-  async getContactById(@Param('id') id: string) {
-    return this.contactsService.getContactById(Number(id)); // Convert 'id' to number
+  async getContactById(@Param('id', ParseIdPipe) id: number) {
+    return this.contactsService.getContactById(id);
   }
 
   @Post()
@@ -31,13 +32,16 @@ export class ContactsController {
     return this.contactsService.createContact(contactData);
   }
 
-  @Put(':id')
-  async updateContact(@Param('id') id: number, @Body() contactData: any) {
+  @Patch(':id')
+  async updateContact(
+    @Param('id', ParseIdPipe) id: number,
+    @Body() contactData: any,
+  ) {
     return this.contactsService.updateContact(id, contactData);
   }
 
   @Delete(':id')
-  async deleteContact(@Param('id') id: number) {
+  async deleteContact(@Param('id', ParseIdPipe) id: number) {
     return this.contactsService.deleteContact(id);
   }
 }
