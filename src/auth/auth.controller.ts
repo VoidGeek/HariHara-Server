@@ -1,4 +1,10 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Res,
+  BadRequestException,
+} from '@nestjs/common';
 import { SupabaseService } from './auth.service';
 import { Response } from 'express';
 
@@ -8,6 +14,13 @@ export class AuthController {
 
   @Get('login')
   async signIn(@Query('provider') provider: string, @Res() res: Response) {
+    // Check if provider is defined and valid
+    const validProviders = ['google', 'github', 'facebook'];
+    if (!provider || !validProviders.includes(provider)) {
+      throw new BadRequestException('Invalid or missing OAuth provider');
+    }
+
+    // Proceed to sign in with the valid provider
     const { url } = await this.supabaseService.signInWithOAuth(provider as any);
     res.redirect(url); // Redirect to the Supabase OAuth URL
   }
