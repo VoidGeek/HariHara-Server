@@ -8,8 +8,6 @@ import { ParseIdPipe } from './common/pipes/parse-id.pipe'; // Import your Parse
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ParseIdPipe()); // Apply ParseIdPipe globally
-
   // Apply global validation for request bodies
   app.useGlobalPipes(
     new ValidationPipe({
@@ -17,6 +15,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true, // Throw error if unknown properties are sent
       transform: true, // Automatically transform payloads (e.g., strings to numbers)
     }),
+    new ParseIdPipe(),
   );
   // Apply PrismaExceptionFilter globally
   app.useGlobalFilters(new PrismaExceptionFilter());
