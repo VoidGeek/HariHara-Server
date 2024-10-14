@@ -27,6 +27,7 @@ model Users {
   password         String
   role_id          Int
   profile_image_id Int?
+  createdAt        DateTime @default(now()) // Automatically stores the timestamp of creation
 
   Role            Roles             @relation(fields: [role_id], references: [role_id])
   Image           Images?           @relation(fields: [profile_image_id], references: [image_id])
@@ -34,6 +35,7 @@ model Users {
   DonationRecords DonationRecords[]
   NewsUpdates     NewsUpdates[] // Add this relation for NewsUpdates
 }
+
 
 model Sevas {
   seva_id     Int     @id @default(autoincrement())
