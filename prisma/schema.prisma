@@ -24,7 +24,8 @@ model Users {
   name             String
   email            String @unique
   phone            String
-  password         String
+  password         String?  // Optional for OAuth users
+  auth_provider    String   // Track auth method: 'oauth' or 'traditional'
   role_id          Int
   profile_image_id Int?
   createdAt        DateTime @default(now()) // Automatically stores the timestamp of creation

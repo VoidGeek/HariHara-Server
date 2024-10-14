@@ -3,9 +3,9 @@ import {
   Get,
   Query,
   Res,
-  BadRequestException,
   Post,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { SupabaseService } from './auth.service';
 import { Response } from 'express';
@@ -22,25 +22,49 @@ export class AuthController {
     }
 
     const { url } = await this.supabaseService.signInWithOAuth(provider as any);
-    res.redirect(url); // Redirect to the Supabase OAuth URL
+    res.redirect(url);
   }
 
   @Post('callback')
   async oauthCallback(@Body('access_token') accessToken: string) {
-    // Check if the access token is received properly
     if (!accessToken) {
       throw new BadRequestException('Access token is missing');
     }
 
-    // Decode the access token if it's URL-encoded
     const decodedAccessToken = decodeURIComponent(accessToken);
 
-    // Get user details from Supabase
+    // Check if the session has been invalidated before allowing access
+    const sessionValid =
+      await this.supabaseService.isSessionValid(decodedAccessToken);
+    if (!sessionValid) {
+      throw new BadRequestException(
+        'Session has been invalidated. Please log in again.',
+      );
+    }
+
     const user = await this.supabaseService.getUser(decodedAccessToken);
-
-    // Store user details in the database
-    const savedUser = await this.supabaseService.storeUserInDatabase(user);
-
+    const savedUser = await this.supabaseService.storeUserInDatabase(
+      user,
+      true,
+    );
     return { message: 'Logged in successfully', user: savedUser };
+  }
+
+  @Post('logout')
+  async logout(
+    @Body('access_token') accessToken: string,
+    @Res() res: Response,
+  ) {
+    if (!accessToken) {
+      throw new BadRequestException('Access token is missing');
+    }
+
+    const decodedAccessToken = decodeURIComponent(accessToken);
+
+    // Invalidate the session
+    await this.supabaseService.logout(decodedAccessToken);
+    return res.json({
+      message: 'Logged out successfully',
+    });
   }
 }
