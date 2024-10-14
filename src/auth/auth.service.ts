@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon2 from 'argon2';
@@ -55,11 +60,11 @@ export class SupabaseService implements OnModuleInit {
     const { data, error } = await this.supabase.auth.getUser(accessToken);
 
     if (error) {
-      throw new Error(`Error fetching user: ${error.message}`);
+      throw new BadRequestException(`Error fetching user: ${error.message}`);
     }
 
     if (!data || !data.user) {
-      throw new Error('Auth session missing!');
+      throw new BadRequestException('Auth session missing!');
     }
 
     return data.user;

@@ -33,7 +33,6 @@ export class AuthController {
 
     const decodedAccessToken = decodeURIComponent(accessToken);
 
-    // Check if the session has been invalidated before allowing access
     const sessionValid =
       await this.supabaseService.isSessionValid(decodedAccessToken);
     if (!sessionValid) {
@@ -42,11 +41,13 @@ export class AuthController {
       );
     }
 
+    // No need for try-catch here, as the exception will be automatically thrown
     const user = await this.supabaseService.getUser(decodedAccessToken);
     const savedUser = await this.supabaseService.storeUserInDatabase(
       user,
       true,
     );
+
     return { message: 'Logged in successfully', user: savedUser };
   }
 
