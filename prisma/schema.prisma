@@ -164,7 +164,7 @@ model NewsUpdates {
   content    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  created_by Int
+  created_by Int?     // Optional foreign key, allows null
 
-  User Users @relation(fields: [created_by], references: [user_id]) // Relation to Users table
+  User Users? @relation(fields: [created_by], references: [user_id]) // Optional relation to Users table
 }
