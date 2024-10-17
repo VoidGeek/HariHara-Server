@@ -39,24 +39,23 @@ export class AuthService {
 
   // Login with Email/Password and store user in session
   async login(email: string, password: string, session: { user?: any }) {
+    // Find the user by email
     const user = await this.prisma.users.findUnique({ where: { email } });
     if (!user || user.auth_provider !== 'traditional') {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Verify the password
     const passwordValid = await argon2.verify(user.password, password);
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Store user data in session
-    session.user = {
-      id: user.user_id,
-      email: user.email,
-      name: user.name,
-    };
+    // Set session data (optional, can be done in the controller)
+    session.user = { id: user.user_id, name: user.name };
 
-    return { message: 'Logged in successfully' };
+    // Return the user object (including user_id, name, etc.)
+    return { user, message: 'Logged in successfully' };
   }
 
   // OAuth login and store user in session
