@@ -7,13 +7,7 @@ export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Register with Email/Password
-  async register(
-    email: string,
-    password: string,
-    name: string,
-    phone: string,
-    session: { user?: any },
-  ) {
+  async register(email: string, password: string, name: string, phone: string) {
     const hashedPassword = await argon2.hash(password);
 
     const newUser = await this.prisma.users.create({
@@ -26,13 +20,6 @@ export class AuthService {
         role_id: 1, // Assign default role
       },
     });
-
-    // Store user data in session
-    session.user = {
-      id: newUser.user_id,
-      email: newUser.email,
-      name: newUser.name,
-    };
 
     return { message: 'Registration successful', user: newUser };
   }

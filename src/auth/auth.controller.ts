@@ -1,11 +1,41 @@
-import { Controller, Post, Get, Body, Session } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Session,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { createResponse } from '../../utils/response.util';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // Dynamic login and store user data in session
+  // Register a new user
+  @Post('register')
+  async register(
+    @Body('email') email: string,
+    @Body('password') password: string,
+    @Body('name') name: string,
+    @Body('phone') phone: string,
+  ) {
+    const newUser = await this.authService.register(
+      email,
+      password,
+      name,
+      phone,
+    );
+    return createResponse(
+      HttpStatus.CREATED,
+      'Registration successful. Please log in.',
+      newUser, // Only pass the user data here
+    );
+  }
+
+  // Login and store user data in session
   @Post('login')
   async login(
     @Body('email') email: string,
@@ -13,33 +43,53 @@ export class AuthController {
     @Session() session: { user?: any },
   ) {
     if (!session.user) {
-      // Call AuthService to authenticate user
+      // Authenticate and log in the user
       const { user } = await this.authService.login(email, password, session);
-
-      // Set user data in the session
       session.user = { id: user.user_id, name: user.name };
 
-      return { message: 'User logged in successfully', user: session.user };
+      // Return the user data
+      return createResponse(
+        HttpStatus.OK,
+        'User logged in successfully',
+        session.user,
+      );
     }
 
-    return { message: 'User already logged in', user: session.user };
+    // User is already logged in, no need to nest another status code
+    return createResponse(
+      HttpStatus.CONFLICT,
+      'User already logged in',
+      session.user,
+    );
   }
 
   // Retrieve session data
   @Get('session')
   getSession(@Session() session: { user?: any }) {
-    return session.user
-      ? { message: 'User session available', user: session.user }
-      : { message: 'No active session' };
+    if (session.user) {
+      return createResponse(
+        HttpStatus.OK,
+        'Session retrieved successfully',
+        session.user,
+      );
+    }
+
+    // No active session
+    throw new HttpException('No active session', HttpStatus.BAD_REQUEST);
   }
 
-  // Clear session data on logout
+  // Logout
   @Post('logout')
   logout(@Session() session: { user?: any }) {
     if (session.user) {
-      session.user = null; // Clear session data only if a user is logged in
-      return { message: 'User logged out successfully' };
+      session.user = null;
+      return createResponse(HttpStatus.OK, 'User logged out successfully');
     }
-    return { message: 'No active session to log out from' };
+
+    // No active session to log out
+    throw new HttpException(
+      'No active session to log out from',
+      HttpStatus.BAD_REQUEST,
+    );
   }
 }

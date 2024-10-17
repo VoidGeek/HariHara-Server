@@ -11,11 +11,15 @@ import { Observable } from 'rxjs';
 export class ResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      map((data) => ({
-        statusCode: 201,
-        message: 'Request successful',
-        data: data,
-      })),
+      map((data) => {
+        const response = {
+          statusCode: context.switchToHttp().getResponse().statusCode || 200, // Dynamically set the status code
+          message: data?.message || 'Request successful',
+        };
+        if (data?.message) delete data.message;
+        response['data'] = data;
+        return response;
+      }),
     );
   }
 }
