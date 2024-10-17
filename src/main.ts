@@ -8,6 +8,11 @@ import { ParseIdPipe } from './common/pipes/parse-id.pipe'; // Import your Parse
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: 'http://localhost:3000', // Your frontend origin
+    credentials: true, // Allow credentials (cookies)
+  });
+
   // Apply global validation for request bodies
   app.useGlobalPipes(
     new ValidationPipe({

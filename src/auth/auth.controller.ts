@@ -1,71 +1,37 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Res,
-  Post,
-  Body,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from './auth.service';
-import { Response } from 'express';
+import { Controller, Post, Get, Session } from '@nestjs/common';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Get('login')
-  async signIn(@Query('provider') provider: string, @Res() res: Response) {
-    const validProviders = ['google', 'github', 'facebook'];
-    if (!provider || !validProviders.includes(provider)) {
-      throw new BadRequestException('Invalid or missing OAuth provider');
+  // Login and store user data in session
+  @Post('login')
+  login(@Session() session: { user?: any }) {
+    if (!session.user) {
+      // Set user data in the session only if not already set
+      session.user = { id: 1, name: 'John Doe' }; // Example data
+      return { message: 'User logged in successfully', user: session.user };
     }
-
-    const { url } = await this.supabaseService.signInWithOAuth(provider as any);
-    res.redirect(url);
+    return { message: 'User already logged in', user: session.user };
   }
 
-  @Post('callback')
-  async oauthCallback(@Body('access_token') accessToken: string) {
-    if (!accessToken) {
-      throw new BadRequestException('Access token is missing');
-    }
-
-    const decodedAccessToken = decodeURIComponent(accessToken);
-
-    const sessionValid =
-      await this.supabaseService.isSessionValid(decodedAccessToken);
-    if (!sessionValid) {
-      throw new BadRequestException(
-        'Session has been invalidated. Please log in again.',
-      );
-    }
-
-    // No need for try-catch here, as the exception will be automatically thrown
-    const user = await this.supabaseService.getUser(decodedAccessToken);
-    const savedUser = await this.supabaseService.storeUserInDatabase(
-      user,
-      true,
-    );
-
-    return { message: 'Logged in successfully', user: savedUser };
+  // Retrieve session data
+  @Get('session')
+  getSession(@Session() session: { user?: any }) {
+    // Return session data if available, otherwise show a clear message
+    return session.user
+      ? { message: 'User session available', user: session.user }
+      : { message: 'No active session' };
   }
 
+  // Clear session data on logout
   @Post('logout')
-  async logout(
-    @Body('access_token') accessToken: string,
-    @Res() res: Response,
-  ) {
-    if (!accessToken) {
-      throw new BadRequestException('Access token is missing');
+  logout(@Session() session: { user?: any }) {
+    if (session.user) {
+      session.user = null; // Clear session data only if a user is logged in
+      return { message: 'User logged out successfully' };
     }
-
-    const decodedAccessToken = decodeURIComponent(accessToken);
-
-    // Invalidate the session
-    await this.supabaseService.logout(decodedAccessToken);
-    return res.json({
-      message: 'Logged out successfully',
-    });
+    return { message: 'No active session to log out from' };
   }
 }
