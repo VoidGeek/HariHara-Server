@@ -13,6 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { ProfileModule } from './profile/profile.module';
 import { RolesModule } from './roles/roles.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { RolesModule } from './roles/roles.module';
     ContactsModule,
     ProfileModule,
     RolesModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
