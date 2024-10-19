@@ -2,17 +2,15 @@ import { Module } from '@nestjs/common';
 import { CookieSessionModule } from 'nestjs-cookie-session';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from 'src/auth/auth.module';
-import { StorageModule } from 'src/supabase/supabase.module';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { ContactsModule } from 'src/contacts/contacts.module';
-import { ProfileModule } from 'src/profile/profile.module';
-import { RolesModule } from 'src/seeds/seeds.module';
-import { AdminModule } from 'src/admin/admin.module';
-import { getSessionConfig } from 'src/utils/session.config'; // Import the session config utility
-import { NewsupdatesModule } from 'src/newsupdates/newsupdates.module';
+import { AuthModule } from './auth/auth.module';
+import { StorageModule } from './supabase/supabase.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ContactsModule } from './contacts/contacts.module';
+import { ProfileModule } from './profile/profile.module';
+import { RolesModule } from './seeds/seeds.module';
+import { AdminModule } from './admin/admin.module';
+import { getSessionConfig } from './common/config/session.config'; // Import the session config utility
+import { NewsupdatesModule } from './newsupdates/newsupdates.module';
 
 @Module({
   imports: [
@@ -37,7 +35,5 @@ import { NewsupdatesModule } from 'src/newsupdates/newsupdates.module';
     AdminModule,
     NewsupdatesModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

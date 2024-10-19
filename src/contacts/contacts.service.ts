@@ -1,76 +1,71 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { BaseService } from 'src/utils/base.service';
+import { CreateContactDto } from './dto/create-contact.dto';
+import { UpdateContactDto } from './dto/update-contact.dto';
+import { BaseService } from 'src/common/utils/base.service';
 
 @Injectable()
 export class ContactsService extends BaseService {
-  constructor(private prisma: PrismaService) {
+  constructor(private readonly prisma: PrismaService) {
     super();
   }
 
-  // Fetch all contacts and order by contact_id (no need for handleDatabaseOperation here)
-  async getContacts(page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit;
-
-    const [contacts, total] = await this.prisma.$transaction([
-      this.prisma.contacts.findMany({
-        skip: skip,
-        take: limit,
-        orderBy: {
-          contact_id: 'asc',
-        },
-      }),
-      this.prisma.contacts.count(), // Get total number of contacts
-    ]);
-
-    return {
-      contacts,
-      meta: {
-        totalItems: total,
-        totalPages: Math.ceil(total / limit),
-        currentPage: page,
-      },
-    };
-  }
-
-  // Fetch a single contact by ID
-  async getContactById(id: number) {
-    return this.handleDatabaseOperation(
-      this.prisma.contacts.findUnique({
-        where: { contact_id: id },
-      }),
-      id,
-      'Contact',
-    );
-  }
-
-  // Create a new contact (handleDatabaseOperation is not needed for create)
-  async createContact(contactData: any) {
-    return this.prisma.contacts.create({
-      data: contactData,
+  // Create a new contact
+  async createContact(createContactDto: CreateContactDto) {
+    return await this.prisma.contacts.create({
+      data: createContactDto,
     });
   }
 
-  // Update an existing contact by ID
-  async updateContact(id: number, contactData: any) {
+  // Get all contacts
+  async getAllContacts() {
+    return await this.prisma.contacts.findMany();
+  }
+
+  // Get a contact by ID
+  async getContactById(contactId: number) {
+    // Use BaseService to handle the database operation and throw NotFoundException if needed
     return this.handleDatabaseOperation(
-      this.prisma.contacts.update({
-        where: { contact_id: id },
-        data: contactData,
+      this.prisma.contacts.findUnique({
+        where: { contact_id: contactId },
       }),
-      id,
+      contactId,
       'Contact',
     );
   }
 
-  // Delete a contact by ID
-  async deleteContact(id: number) {
-    return this.handleDatabaseOperation(
-      this.prisma.contacts.delete({
-        where: { contact_id: id },
+  // Update a contact
+  async updateContact(contactId: number, updateContactDto: UpdateContactDto) {
+    // Use BaseService to ensure the contact exists before updating
+    await this.handleDatabaseOperation(
+      this.prisma.contacts.findUnique({
+        where: { contact_id: contactId },
       }),
-      id,
+      contactId,
       'Contact',
     );
+
+    return await this.prisma.contacts.update({
+      where: { contact_id: contactId },
+      data: updateContactDto,
+    });
+  }
+
+  // Delete a contact
+  async deleteContact(contactId: number) {
+    // Use BaseService to ensure the contact exists before deleting
+    await this.handleDatabaseOperation(
+      this.prisma.contacts.findUnique({
+        where: { contact_id: contactId },
+      }),
+      contactId,
+      'Contact',
+    );
+
+    await this.prisma.contacts.delete({
+      where: { contact_id: contactId },
+    });
+
+    return { message: 'Contact deleted successfully' };
   }
 }

@@ -1,41 +1,49 @@
 import {
   Controller,
-  Get,
   Post,
-  Patch,
-  Delete,
+  Get,
   Param,
   Body,
-  UseFilters,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
-import { PrismaExceptionFilter } from '../common/filters/prisma-exception.filter';
+import { CreateContactDto } from './dto/create-contact.dto';
+import { UpdateContactDto } from './dto/update-contact.dto';
 
 @Controller('contacts')
-@UseFilters(PrismaExceptionFilter)
 export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
 
-  @Get()
-  async getContacts() {
-    return this.contactsService.getContacts();
+  // Create a new contact
+  @Post()
+  async createContact(@Body() createContactDto: CreateContactDto) {
+    console.log('DTO Validated:', createContactDto);
+    return this.contactsService.createContact(createContactDto);
   }
 
+  // Get all contacts
+  @Get()
+  async getAllContacts() {
+    return this.contactsService.getAllContacts();
+  }
+
+  // Get a contact by ID
   @Get(':id')
   async getContactById(@Param('id') id: number) {
     return this.contactsService.getContactById(id);
   }
 
-  @Post()
-  async createContact(@Body() contactData: any) {
-    return this.contactsService.createContact(contactData);
-  }
-
+  // Update a contact by ID
   @Patch(':id')
-  async updateContact(@Param('id') id: number, @Body() contactData: any) {
-    return this.contactsService.updateContact(id, contactData);
+  async updateContact(
+    @Param('id') id: number,
+    @Body() updateContactDto: UpdateContactDto,
+  ) {
+    return this.contactsService.updateContact(id, updateContactDto);
   }
 
+  // Delete a contact by ID
   @Delete(':id')
   async deleteContact(@Param('id') id: number) {
     return this.contactsService.deleteContact(id);

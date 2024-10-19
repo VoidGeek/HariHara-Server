@@ -8,7 +8,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { createResponse } from '../utils/response.util';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -16,63 +17,39 @@ export class AuthController {
 
   // Register a new user
   @Post('register')
-  async register(
-    @Body('email') email: string,
-    @Body('password') password: string,
-    @Body('name') name: string,
-    @Body('phone') phone: string,
-  ) {
+  async register(@Body() registerDto: RegisterDto) {
     const newUser = await this.authService.register(
-      email,
-      password,
-      name,
-      phone,
+      registerDto.email,
+      registerDto.password,
+      registerDto.name,
+      registerDto.phone,
     );
-    return createResponse(
-      HttpStatus.CREATED,
-      'Registration successful. Please log in.',
-      newUser,
-    );
+    return newUser; // The ResponseInterceptor will format the response
   }
 
   // Login and store user data in session
   @Post('login')
-  async login(
-    @Body('email') email: string,
-    @Body('password') password: string,
-    @Session() session: { user?: any },
-  ) {
+  async login(@Body() loginDto: LoginDto, @Session() session: { user?: any }) {
     if (!session.user) {
-      // Call the service to handle the login logic
-      const user = await this.authService.login(email, password);
-
-      // Store user data in session
-      session.user = { id: user.user_id, name: user.name };
-
-      return createResponse(
-        HttpStatus.OK,
-        'User logged in successfully',
-        session.user,
+      // Authenticate and log in the user
+      const user = await this.authService.login(
+        loginDto.email,
+        loginDto.password,
       );
+      session.user = { id: user.user_id, name: user.name }; // Store user in session
+
+      return session.user; // ResponseInterceptor will format this
     }
 
     // User is already logged in
-    return createResponse(
-      HttpStatus.CONFLICT,
-      'User already logged in',
-      session.user,
-    );
+    throw new HttpException('User already logged in', HttpStatus.CONFLICT);
   }
 
   // Retrieve session data
   @Get('session')
   getSession(@Session() session: { user?: any }) {
     if (session.user) {
-      return createResponse(
-        HttpStatus.OK,
-        'Session retrieved successfully',
-        session.user,
-      );
+      return session.user; // ResponseInterceptor will format this
     }
 
     // No active session
@@ -85,7 +62,7 @@ export class AuthController {
     if (session.user) {
       // Clear the user session
       session.user = null;
-      return createResponse(HttpStatus.OK, 'User logged out successfully');
+      return { message: 'User logged out successfully' }; // ResponseInterceptor formats this
     }
 
     // No active session to log out

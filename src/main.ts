@@ -1,6 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
+import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ParseIdPipe } from './common/pipes/parse-id.pipe'; // Import your ParseIdPipe
@@ -16,9 +16,10 @@ async function bootstrap() {
   // Apply global validation for request bodies
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Strip unknown properties
-      forbidNonWhitelisted: true, // Throw error if unknown properties are sent
-      transform: true, // Automatically transform payloads (e.g., strings to numbers)
+      whitelist: true, // Strips properties not defined in the DTO
+      forbidNonWhitelisted: true, // Throws an error if non-whitelisted properties are provided
+      transform: true, // Automatically transforms payloads to be objects typed according to DTOs
+      disableErrorMessages: false, // Ensures detailed validation error messages are shown
     }),
     new ParseIdPipe(),
   );
