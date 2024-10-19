@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -20,44 +14,40 @@ model Roles {
 }
 
 model Users {
-  user_id          Int    @id @default(autoincrement())
+  user_id          Int               @id @default(autoincrement())
   name             String
-  email            String @unique
+  email            String            @unique
   phone            String
-  password         String?  // Optional for OAuth users
-  auth_provider    String   // Track auth method: 'oauth' or 'traditional'
+  password         String?
   role_id          Int
   profile_image_id Int?
-  createdAt        DateTime @default(now()) // Automatically stores the timestamp of creation
-
-  Role            Roles             @relation(fields: [role_id], references: [role_id])
-  Image           Images?           @relation(fields: [profile_image_id], references: [image_id])
-  Orders          Orders[]
-  DonationRecords DonationRecords[]
-  NewsUpdates     NewsUpdates[] // Add this relation for NewsUpdates
+  createdAt        DateTime          @default(now())
+  auth_provider    String
+  DonationRecords  DonationRecords[]
+  NewsUpdates      NewsUpdates[]
+  Orders           Orders[]
+  Image            Images?           @relation(fields: [profile_image_id], references: [image_id])
+  Role             Roles             @relation(fields: [role_id], references: [role_id])
 }
 
-
 model Sevas {
-  seva_id     Int     @id @default(autoincrement())
-  name        String
-  description String
-  base_price  Decimal
-
+  seva_id      Int            @id @default(autoincrement())
+  name         String
+  description  String
+  base_price   Decimal
   OrderDetails OrderDetails[]
 }
 
 model Orders {
-  order_id     Int      @id @default(autoincrement())
-  user_id      Int
-  order_date   DateTime
-  status       String
-  total_amount Decimal
-
-  User            Users            @relation(fields: [user_id], references: [user_id])
-  OrderDetails    OrderDetails[]
-  Receipts        Receipts?
+  order_id        Int              @id @default(autoincrement())
+  user_id         Int
+  order_date      DateTime
+  status          String
+  total_amount    Decimal
   Acknowledgments Acknowledgments?
+  OrderDetails    OrderDetails[]
+  User            Users            @relation(fields: [user_id], references: [user_id])
+  Receipts        Receipts?
 }
 
 model OrderDetails {
@@ -66,23 +56,21 @@ model OrderDetails {
   seva_id         Int
   quantity        Int
   price           Decimal
-
-  Orders Orders @relation(fields: [order_id], references: [order_id])
-  Sevas  Sevas  @relation(fields: [seva_id], references: [seva_id])
+  Orders          Orders  @relation(fields: [order_id], references: [order_id])
+  Sevas           Sevas   @relation(fields: [seva_id], references: [seva_id])
 }
 
 model Receipts {
-  receipt_id          Int      @id @default(autoincrement())
-  order_id            Int      @unique
+  receipt_id          Int               @id @default(autoincrement())
+  order_id            Int               @unique
   receipt_number      String
   amount_paid         Decimal
   payment_date        DateTime
   payment_status      String
   razorpay_payment_id String?
-
-  Orders          Orders            @relation(fields: [order_id], references: [order_id])
-  Payments        Payments[]
-  DonationRecords DonationRecords[] // Added opposite relation for DonationRecords
+  DonationRecords     DonationRecords[]
+  Payments            Payments[]
+  Orders              Orders            @relation(fields: [order_id], references: [order_id])
 }
 
 model Acknowledgments {
@@ -91,21 +79,19 @@ model Acknowledgments {
   acknowledgment_number String
   acknowledged_date     DateTime
   message               String?
-
-  Orders Orders @relation(fields: [order_id], references: [order_id])
+  Orders                Orders   @relation(fields: [order_id], references: [order_id])
 }
 
 model DonationRecords {
-  donation_record_id Int      @id @default(autoincrement())
+  donation_record_id Int       @id @default(autoincrement())
   user_id            Int
   donation_amount    Decimal
   donation_date      DateTime
   certificate_number String
   tax_deductible     Boolean
   receipt_id         Int?
-
-  User     Users     @relation(fields: [user_id], references: [user_id])
-  Receipts Receipts? @relation(fields: [receipt_id], references: [receipt_id])
+  Receipts           Receipts? @relation(fields: [receipt_id], references: [receipt_id])
+  User               Users     @relation(fields: [user_id], references: [user_id])
 }
 
 model Payments {
@@ -115,40 +101,37 @@ model Payments {
   payment_date        DateTime
   payment_status      String
   razorpay_payment_id String?
-
-  Receipts Receipts @relation(fields: [receipt_id], references: [receipt_id])
+  Receipts            Receipts @relation(fields: [receipt_id], references: [receipt_id])
 }
 
 model Images {
-  image_id     Int     @id @default(autoincrement())
-  file_path    String  // Store the file path like 'images/my-image.jpg'
-  alt_text     String?
-  Users        Users[]
+  image_id          Int                 @id @default(autoincrement())
+  alt_text          String?
+  file_path         String
   ImageAssociations ImageAssociations[]
+  Users             Users[]
 }
 
 model ImageAssociations {
-  association_id Int    @id @default(autoincrement())
+  association_id Int     @id @default(autoincrement())
   image_id       Int
   entity_id      Int
   entity_type    String
-
-  Images  Images  @relation(fields: [image_id], references: [image_id])
-  Gallery Gallery @relation(fields: [entity_id], references: [gallery_id]) // Define the relation to Gallery
+  Gallery        Gallery @relation(fields: [entity_id], references: [gallery_id])
+  Images         Images  @relation(fields: [image_id], references: [image_id])
 }
 
 model Gallery {
-  gallery_id  Int      @id @default(autoincrement())
-  title       String
-  description String
-  created_at  DateTime
-
-  ImageAssociations ImageAssociations[] // This references ImageAssociations
+  gallery_id        Int                 @id @default(autoincrement())
+  title             String
+  description       String
+  created_at        DateTime
+  ImageAssociations ImageAssociations[]
 }
 
 model Contacts {
   contact_id  Int    @id @default(autoincrement())
-  name        String // New name field
+  name        String
   address     String
   city        String
   state       String
@@ -163,6 +146,6 @@ model NewsUpdates {
   content    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  created_by Int      // Foreign key, not optional
-  User Users @relation(fields: [created_by], references: [user_id]) // Relation to Users table
+  created_by Int?
+  User       Users?   @relation(fields: [created_by], references: [user_id])
 }
