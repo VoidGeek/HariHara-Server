@@ -1,10 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon2 from 'argon2';
+import { BaseService } from 'src/common/utils/base.service'; // Import BaseService
 
 @Injectable()
-export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+export class AuthService extends BaseService {
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
   // Register a new user
   async register(email: string, password: string, name: string, phone: string) {
@@ -28,12 +31,12 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.prisma.users.findUnique({ where: { email } });
     if (!user || user.auth_provider !== 'traditional') {
-      throw new UnauthorizedException('Invalid credentials');
+      this.throwUnauthorizedException('UNAUTHORIZED'); // Dynamically fetch from Map
     }
 
     const passwordValid = await argon2.verify(user.password, password);
     if (!passwordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      this.throwUnauthorizedException('UNAUTHORIZED'); // Dynamically fetch from Map
     }
 
     return user; // Return the authenticated user
@@ -43,7 +46,7 @@ export class AuthService {
   async oauthLogin(email: string) {
     const user = await this.prisma.users.findUnique({ where: { email } });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      this.throwUnauthorizedException('USER_NOT_FOUND'); // Uses 'User not found'
     }
 
     return user;

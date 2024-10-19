@@ -4,16 +4,18 @@ import {
   Get,
   Body,
   Session,
-  HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { BaseService } from 'src/common/utils/base.service'; // Import BaseService
 
 @Controller('auth')
-export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+export class AuthController extends BaseService {
+  constructor(private readonly authService: AuthService) {
+    super();
+  }
 
   // Register a new user
   @Post('register')
@@ -31,44 +33,38 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Session() session: { user?: any }) {
     if (!session.user) {
-      // Authenticate and log in the user
       const user = await this.authService.login(
         loginDto.email,
         loginDto.password,
       );
       session.user = { id: user.user_id, name: user.name }; // Store user in session
-
-      return session.user; // ResponseInterceptor will format this
+      return session.user;
     }
 
-    // User is already logged in
-    throw new HttpException('User already logged in', HttpStatus.CONFLICT);
+    // User already logged in, using the constant from Map
+    this.throwHttpException('ALREADY_LOGGED_IN', HttpStatus.CONFLICT);
   }
 
   // Retrieve session data
   @Get('session')
   getSession(@Session() session: { user?: any }) {
     if (session.user) {
-      return session.user; // ResponseInterceptor will format this
+      return session.user;
     }
 
-    // No active session
-    throw new HttpException('No active session', HttpStatus.BAD_REQUEST);
+    // No active session, using the constant from Map
+    this.throwHttpException('NO_ACTIVE_SESSION', HttpStatus.BAD_REQUEST);
   }
 
   // Logout and clear the session
   @Post('logout')
   logout(@Session() session: { user?: any }) {
     if (session.user) {
-      // Clear the user session
       session.user = null;
-      return { message: 'User logged out successfully' }; // ResponseInterceptor formats this
+      return { message: 'User logged out successfully' };
     }
 
-    // No active session to log out
-    throw new HttpException(
-      'No active session to log out from',
-      HttpStatus.BAD_REQUEST,
-    );
+    // No active session to log out, using the constant from Map
+    this.throwHttpException('NO_ACTIVE_SESSION', HttpStatus.BAD_REQUEST);
   }
 }
