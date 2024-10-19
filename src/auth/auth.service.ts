@@ -6,7 +6,7 @@ import * as argon2 from 'argon2';
 export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Register with Email/Password
+  // Register a new user
   async register(email: string, password: string, name: string, phone: string) {
     const hashedPassword = await argon2.hash(password);
 
@@ -17,49 +17,35 @@ export class AuthService {
         name,
         phone,
         auth_provider: 'traditional',
-        role_id: 1, // Assign default role
+        role_id: 1, // Default user role
       },
     });
 
-    return { message: 'Registration successful', user: newUser };
+    return newUser;
   }
 
-  // Login with Email/Password and store user in session
-  async login(email: string, password: string, session: { user?: any }) {
-    // Find the user by email
+  // Login user by validating the password
+  async login(email: string, password: string) {
     const user = await this.prisma.users.findUnique({ where: { email } });
     if (!user || user.auth_provider !== 'traditional') {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Verify the password
     const passwordValid = await argon2.verify(user.password, password);
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Set session data (optional, can be done in the controller)
-    session.user = { id: user.user_id, name: user.name };
-
-    // Return the user object (including user_id, name, etc.)
-    return { user, message: 'Logged in successfully' };
+    return user; // Return the authenticated user
   }
 
-  // OAuth login and store user in session
-  async oauthLogin(email: string, session: { user?: any }) {
+  // Handle OAuth login (example for future use)
+  async oauthLogin(email: string) {
     const user = await this.prisma.users.findUnique({ where: { email } });
-
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    // Store user data in session
-    session.user = {
-      id: user.user_id,
-      email: user.email,
-      name: user.name,
-    };
-
-    return { message: 'Logged in with OAuth successfully' };
+    return user;
   }
 }

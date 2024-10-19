@@ -24,7 +24,7 @@ export class ContactsService extends BaseService {
     ]);
 
     return {
-      data: contacts,
+      contacts,
       meta: {
         totalItems: total,
         totalPages: Math.ceil(total / limit),

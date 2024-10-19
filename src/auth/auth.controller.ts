@@ -31,7 +31,7 @@ export class AuthController {
     return createResponse(
       HttpStatus.CREATED,
       'Registration successful. Please log in.',
-      newUser, // Only pass the user data here
+      newUser,
     );
   }
 
@@ -43,11 +43,12 @@ export class AuthController {
     @Session() session: { user?: any },
   ) {
     if (!session.user) {
-      // Authenticate and log in the user
-      const { user } = await this.authService.login(email, password, session);
+      // Call the service to handle the login logic
+      const user = await this.authService.login(email, password);
+
+      // Store user data in session
       session.user = { id: user.user_id, name: user.name };
 
-      // Return the user data
       return createResponse(
         HttpStatus.OK,
         'User logged in successfully',
@@ -55,7 +56,7 @@ export class AuthController {
       );
     }
 
-    // User is already logged in, no need to nest another status code
+    // User is already logged in
     return createResponse(
       HttpStatus.CONFLICT,
       'User already logged in',
@@ -78,10 +79,11 @@ export class AuthController {
     throw new HttpException('No active session', HttpStatus.BAD_REQUEST);
   }
 
-  // Logout
+  // Logout and clear the session
   @Post('logout')
   logout(@Session() session: { user?: any }) {
     if (session.user) {
+      // Clear the user session
       session.user = null;
       return createResponse(HttpStatus.OK, 'User logged out successfully');
     }
