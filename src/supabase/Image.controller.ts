@@ -2,56 +2,94 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   UseGuards,
   UseInterceptors,
   UploadedFile,
   Param,
-  Body,
   BadRequestException,
+  Query,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SupabaseService } from './supabase.service';
-import { SessionAuthGuard } from '../auth/auth.guard'; // Your custom session guard
+import { SessionAuthGuard } from '../auth/auth.guard';
 
 @Controller('images')
 export class ImageController {
   constructor(private supabaseService: SupabaseService) {}
 
-  // Route to upload the image and store the file path in the database
   @Post('upload')
-  @UseGuards(SessionAuthGuard) // Ensure only logged-in users can upload
-  @UseInterceptors(FileInterceptor('fileBuffer')) // Handle file upload
-  async uploadImage(
-    @UploadedFile() file: any, // Uploaded file
-    @Body('fileName') fileName: string, // File name from FormData
-    @Body('altText') altText: string, // Optional alt text
-  ) {
-    if (!file || !fileName) {
-      throw new BadRequestException('File and file name are required');
+  @UseGuards(SessionAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadImage(@UploadedFile() file: any, @Req() req: any) {
+    if (!file) {
+      throw new BadRequestException('File is required');
     }
 
-    return this.supabaseService.uploadToSupabase(
-      file.buffer,
-      fileName,
-      altText,
-    );
+    // Access userId from session (stored during login)
+    const userId = req.session?.user?.id; // Extracts userId from session
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    // Call the service to handle the upload, passing the userId
+    return this.supabaseService.uploadToSupabase(file.buffer, userId);
   }
 
-  // Route to generate and return a signed URL for a specific image
+  @Put('update/:imageId')
+  @UseGuards(SessionAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async updateImage(
+    @Param('imageId') imageId: number,
+    @UploadedFile() file: any,
+    @Req() req: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    // Access userId from session
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    // Call the service to handle the update, passing the userId
+    return this.supabaseService.updateImage(imageId, file.buffer, userId);
+  }
+
   @Get('signed-url/:imageId')
-  @UseGuards(SessionAuthGuard) // Use session guard to protect access to signed URLs
+  @UseGuards(SessionAuthGuard)
   async getSignedUrl(@Param('imageId') imageId: number) {
     const image = await this.supabaseService.getImageById(imageId);
-
     if (!image) {
       throw new BadRequestException('Image not found');
     }
-
-    // Generate signed URL on demand
     const signedUrl = await this.supabaseService.generateSignedUrl(
       image.file_path,
     );
-
     return { signed_url: signedUrl };
+  }
+
+  @Get('batch')
+  @UseGuards(SessionAuthGuard)
+  async getImageBatch(@Query('limit') limit = '10', @Query('page') page = '1') {
+    const limitNum = parseInt(limit, 10);
+    const pageNum = parseInt(page, 10);
+
+    const images = await this.supabaseService.getImagesBatch(limitNum, pageNum);
+    const imagesWithSignedUrls = await Promise.all(
+      images.map(async (image) => {
+        const signedUrl = await this.supabaseService.generateSignedUrl(
+          image.file_path,
+        );
+        return {
+          ...image,
+          signed_url: signedUrl,
+        };
+      }),
+    );
+    return { images: imagesWithSignedUrls };
   }
 }

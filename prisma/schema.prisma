@@ -20,15 +20,33 @@ model Users {
   phone            String
   password         String?
   role_id          Int
-  profile_image_id Int?
   createdAt        DateTime          @default(now())
   auth_provider    String
+
   DonationRecords  DonationRecords[]
   NewsUpdates      NewsUpdates[]
   Orders           Orders[]
-  Image            Images?           @relation(fields: [profile_image_id], references: [image_id])
   Role             Roles             @relation(fields: [role_id], references: [role_id])
+
+  // Add relations for created_by and modified_by in the Images model
+  CreatedImages    Images[]          @relation("createdByRelation")
+  ModifiedImages   Images[]          @relation("modifiedByRelation")
 }
+
+model Images {
+  image_id      Int       @id @default(autoincrement())
+  alt_text      String?
+  file_path     String
+  created_by    Int       // Relation to Users
+  created_at    DateTime  @default(now())
+  modified_by   Int?      // Optional relation to Users
+  modified_at   DateTime  @updatedAt
+
+  // Relations to Users for created_by and modified_by
+  createdBy     Users     @relation("createdByRelation", fields: [created_by], references: [user_id])
+  modifiedBy    Users?    @relation("modifiedByRelation", fields: [modified_by], references: [user_id])
+}
+
 
 model Sevas {
   seva_id      Int            @id @default(autoincrement())
@@ -102,32 +120,6 @@ model Payments {
   payment_status      String
   razorpay_payment_id String?
   Receipts            Receipts @relation(fields: [receipt_id], references: [receipt_id])
-}
-
-model Images {
-  image_id          Int                 @id @default(autoincrement())
-  alt_text          String?
-  file_path         String
-  supabase_url      String?
-  ImageAssociations ImageAssociations[]
-  Users             Users[]
-}
-
-model ImageAssociations {
-  association_id Int     @id @default(autoincrement())
-  image_id       Int
-  entity_id      Int
-  entity_type    String
-  Gallery        Gallery @relation(fields: [entity_id], references: [gallery_id])
-  Images         Images  @relation(fields: [image_id], references: [image_id])
-}
-
-model Gallery {
-  gallery_id        Int                 @id @default(autoincrement())
-  title             String
-  description       String
-  created_at        DateTime
-  ImageAssociations ImageAssociations[]
 }
 
 model Contacts {
