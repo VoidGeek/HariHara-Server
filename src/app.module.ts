@@ -1,47 +1,33 @@
 import { Module } from '@nestjs/common';
-import {
-  CookieSessionModule,
-  NestCookieSessionOptions,
-} from 'nestjs-cookie-session';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // For async config
+import { CookieSessionModule } from 'nestjs-cookie-session';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { StorageModule } from './storage/storage.module';
+import { StorageModule } from './supabase/supabase.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { ProfileModule } from './profile/profile.module';
-import { RolesModule } from './roles/roles.module';
+import { RolesModule } from './seeds/seeds.module';
 import { AdminModule } from './admin/admin.module';
+import { getSessionConfig } from './utils/session.config'; // Import the session config utility
 
 @Module({
   imports: [
-    // Synchronous Configuration for cookie-session
-    CookieSessionModule.forRoot({
-      session: { secret: process.env.SESSION_SECRET || 'your-session-secret' },
-    }),
+    // Load environment variables via ConfigModule
+    ConfigModule.forRoot(),
 
-    // Async Configuration for cookie-session using ConfigModule
+    // Synchronous Configuration for cookie-session with 1-month expiry
     CookieSessionModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<NestCookieSessionOptions> => {
-        return {
-          session: {
-            secret:
-              configService.get('SESSION_SECRET') || 'your-session-secret',
-            maxAge: 24 * 60 * 60 * 1000, // Set session expiration to 24 hours
-          },
-        };
-      },
+      useFactory: (configService: ConfigService) =>
+        getSessionConfig(configService),
     }),
 
-    // Additional Modules
-    ConfigModule.forRoot(), // Load environment variables if needed
-    AuthModule, // Your existing modules
+    // Other modules
+    AuthModule,
     StorageModule,
     PrismaModule,
     ContactsModule,

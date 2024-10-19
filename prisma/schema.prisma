@@ -121,10 +121,9 @@ model Payments {
 
 model Images {
   image_id     Int     @id @default(autoincrement())
-  supabase_url String
+  file_path    String  // Store the file path like 'images/my-image.jpg'
   alt_text     String?
-
-  Users             Users[]
+  Users        Users[]
   ImageAssociations ImageAssociations[]
 }
 

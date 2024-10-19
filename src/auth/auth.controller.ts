@@ -8,7 +8,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { createResponse } from '../../utils/response.util';
+import { createResponse } from '../utils/response.util';
 
 @Controller('auth')
 export class AuthController {
