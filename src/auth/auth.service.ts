@@ -10,7 +10,13 @@ export class AuthService extends BaseService {
   }
 
   // Register a new user
-  async register(email: string, password: string, name: string, phone: string) {
+  async register(
+    email: string,
+    password: string,
+    name: string,
+    phone: string,
+    role_id?: number, // Add role_id as an optional parameter
+  ) {
     const hashedPassword = await argon2.hash(password);
 
     const newUser = await this.prisma.users.create({
@@ -20,7 +26,7 @@ export class AuthService extends BaseService {
         name,
         phone,
         auth_provider: 'traditional',
-        role_id: 1, // Default user role
+        role_id: role_id || 1, // Use provided role_id if present, otherwise default to 1
       },
     });
 

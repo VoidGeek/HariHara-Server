@@ -25,6 +25,7 @@ export class AuthController extends BaseService {
       registerDto.password,
       registerDto.name,
       registerDto.phone,
+      registerDto.role_id,
     );
     return newUser; // The ResponseInterceptor will format the response
   }
