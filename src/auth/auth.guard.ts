@@ -1,25 +1,13 @@
-import {
-  Injectable,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { getSessionUser } from '../common/utils/session.util'; // Utility for session checks
 
 @Injectable()
 export class SessionAuthGuard extends AuthGuard('jwt') {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-
-    // Access user information from the session
-    const user = request.session?.user;
-
-    if (!user) {
-      throw new UnauthorizedException('No user session found');
-    }
-
-    // Attach the user object to the request so that it can be used in handlers
-    request.user = user;
-
-    return true; // Allow the request to proceed if the user exists
+    const user = getSessionUser(request); // Check and extract user from session
+    request.user = user; // Attach the user to the request
+    return true;
   }
 }

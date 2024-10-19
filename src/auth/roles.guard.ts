@@ -5,7 +5,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PrismaService } from 'src/prisma/prisma.service'; // PrismaService for DB queries
+import { PrismaService } from '../prisma/prisma.service';
+import { getSessionUser } from 'src/common/utils/session.util';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -15,28 +16,19 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Fetch the required role name from metadata
     const requiredRole = this.reflector.get<string>(
       'role',
       context.getHandler(),
     );
-    if (!requiredRole) {
-      return true; // No role required, allow access
-    }
+    if (!requiredRole) return true; // If no role required, allow access
 
     const request = context.switchToHttp().getRequest();
-    const user = request.session?.user;
+    const user = getSessionUser(request); // Get the session user
 
-    if (!user) {
-      throw new ForbiddenException('User not authenticated');
-    }
-
-    // Fetch user role from the database (join Users and Roles table)
+    // Fetch the user's role from the database
     const userWithRole = await this.prisma.users.findUnique({
       where: { user_id: user.id },
-      include: {
-        Role: true, // Include related role information
-      },
+      include: { Role: true },
     });
 
     if (!userWithRole || userWithRole.Role.role_name !== requiredRole) {
@@ -45,6 +37,6 @@ export class RolesGuard implements CanActivate {
       );
     }
 
-    return true; // User has the required role, allow access
+    return true; // User has the required role
   }
 }
