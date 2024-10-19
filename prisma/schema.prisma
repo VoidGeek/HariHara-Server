@@ -108,6 +108,7 @@ model Images {
   image_id          Int                 @id @default(autoincrement())
   alt_text          String?
   file_path         String
+  supabase_url      String?
   ImageAssociations ImageAssociations[]
   Users             Users[]
 }
