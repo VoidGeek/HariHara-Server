@@ -9,7 +9,7 @@ export class BaseService {
     const result = await operation;
     if (!result) {
       throw new NotFoundException(
-        `${entityName} with ID ${id} not found. Please make sure the contact exists.`,
+        `${entityName} with ID ${id} not found. Please make sure the ${entityName} exists.`,
       );
     }
     return result;
