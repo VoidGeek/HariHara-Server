@@ -13,13 +13,12 @@ export class RolesSeedService implements OnModuleInit {
 
   // Optimized method to seed default roles
   private async seedRoles() {
-    const requiredRoles = ['User', 'Admin']; // List of required roles
+    const requiredRoles = ['User', 'Admin', 'Moderator']; // List of required roles
 
     // Fetch existing roles from the database
     const existingRoles = await this.prisma.roles.findMany({
       where: { role_name: { in: requiredRoles } },
     });
-
     const existingRoleNames = existingRoles.map((role) => role.role_name);
 
     // Find the roles that are missing

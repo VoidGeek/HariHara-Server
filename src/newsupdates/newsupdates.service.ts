@@ -35,7 +35,10 @@ export class NewsUpdatesService extends BaseService {
   }
 
   // Update a news update
-  async updateNewsUpdate(newsId: number, updateNewsUpdateDto: UpdateNewsUpdateDto) {
+  async updateNewsUpdate(
+    newsId: number,
+    updateNewsUpdateDto: UpdateNewsUpdateDto,
+  ) {
     // Use BaseService to ensure the news update exists before updating
     await this.handleDatabaseOperation(
       this.prisma.newsUpdates.findUnique({
