@@ -60,7 +60,6 @@ export class ImageController {
   }
 
   @Get('signed-url/:imageId')
-  @UseGuards(SessionAuthGuard)
   async getSignedUrl(@Param('imageId') imageId: number) {
     const image = await this.supabaseService.getImageById(imageId);
     if (!image) {
@@ -73,7 +72,6 @@ export class ImageController {
   }
 
   @Get('batch')
-  @UseGuards(SessionAuthGuard)
   async getImageBatch(@Query('limit') limit = '10', @Query('page') page = '1') {
     const limitNum = parseInt(limit, 10);
     const pageNum = parseInt(page, 10);

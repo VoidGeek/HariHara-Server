@@ -11,6 +11,7 @@ import { RolesModule } from './seeds/seeds.module';
 import { AdminModule } from './admin/admin.module';
 import { getSessionConfig } from './common/config/session.config'; // Import the session config utility
 import { NewsupdatesModule } from './newsupdates/newsupdates.module';
+import { SevasModule } from './sevas/sevas.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { NewsupdatesModule } from './newsupdates/newsupdates.module';
     RolesModule,
     AdminModule,
     NewsupdatesModule,
+    SevasModule,
   ],
 })
 export class AppModule {}
