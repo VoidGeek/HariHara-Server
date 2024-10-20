@@ -1,5 +1,5 @@
 // create-newsupdate.dto.ts
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateNewsUpdateDto {
   @IsNotEmpty()
