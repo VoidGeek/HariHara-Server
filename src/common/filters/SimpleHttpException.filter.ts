@@ -17,16 +17,19 @@ export class SimpleHttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus ? exception.getStatus() : 500;
 
-    const errorMessage = exception.message || 'Unexpected error occurred';
+    // Check if the exception message is an array (DTO validation errors) or a string
+    const errorMessage = Array.isArray(exception.getResponse()['message'])
+      ? exception.getResponse()['message']
+      : exception.message || 'Unexpected error occurred';
 
-    // Cleaner log with structured stack trace information
+    // Log the error details
     this.logger.error(
       `\nError Details:\n` +
         `\t- HTTP Method: ${request.method}\n` +
         `\t- URL: ${request.url}\n` +
         `\t- Status Code: ${status}\n` +
-        `\t- Message: ${errorMessage}\n` +
-        `\t- Stack Trace:\n${this.formatStackTrace(exception.stack)}\n`, // Beautifully formatted stack trace
+        `\t- Message: ${Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage}\n` +
+        `\t- Stack Trace:\n${this.formatStackTrace(exception.stack)}\n`,
     );
 
     const errorResponse = {
@@ -34,13 +37,13 @@ export class SimpleHttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
+      // Send message as it is, array or string
       message: errorMessage,
     };
 
     response.status(status).json(errorResponse);
   }
 
-  // Helper method to format the stack trace for cleaner display
   private formatStackTrace(stack: string): string {
     return stack
       .split('\n')

@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ParseIdPipe } from './common/pipes/parse-id.pipe'; // Import your ParseIdPipe
+import { SimpleHttpExceptionFilter } from './common/filters/SimpleHttpException.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,8 +24,10 @@ async function bootstrap() {
     }),
     new ParseIdPipe(),
   );
-  // Apply PrismaExceptionFilter globally
+
+  app.useGlobalFilters(new SimpleHttpExceptionFilter());
   app.useGlobalFilters(new PrismaExceptionFilter());
+
   // Apply global response interceptor for consistent success message
   app.useGlobalInterceptors(new ResponseInterceptor());
 

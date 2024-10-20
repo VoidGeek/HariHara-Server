@@ -1,7 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { CookieSessionModule } from 'nestjs-cookie-session';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core'; // Import APP_FILTER for global filter
 
 import { AuthModule } from './auth/auth.module';
 import { StorageModule } from './supabase/supabase.module';
@@ -15,7 +14,6 @@ import { NewsupdatesModule } from './newsupdates/newsupdates.module';
 import { SevasModule } from './sevas/sevas.module';
 
 import { LoggerMiddleware } from './middleware/logger.middleware'; // Import the logger middleware
-import { SimpleHttpExceptionFilter } from './common/filters/SimpleHttpException.filter'; // Import the exception filter
 
 @Module({
   imports: [
@@ -40,13 +38,6 @@ import { SimpleHttpExceptionFilter } from './common/filters/SimpleHttpException.
     AdminModule,
     NewsupdatesModule,
     SevasModule,
-  ],
-  providers: [
-    // Apply the global exception filter
-    {
-      provide: APP_FILTER,
-      useClass: SimpleHttpExceptionFilter,
-    },
   ],
 })
 export class AppModule implements NestModule {
