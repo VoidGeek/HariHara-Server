@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique file names
@@ -112,5 +112,33 @@ export class SupabaseService {
   // Fetch an image by its ID
   async getImageById(imageId: number) {
     return this.prisma.images.findUnique({ where: { image_id: imageId } });
+  }
+
+  // Method to delete an image
+  async deleteImage(imageId: number, userId: number) {
+    // Fetch the image record from the database
+    const imageRecord = await this.prisma.images.findUnique({
+      where: { image_id: imageId },
+    });
+
+    if (!imageRecord) {
+      throw new NotFoundException('Image not found');
+    }
+
+    // Remove the image from Supabase bucket
+    const { error } = await this.supabase.storage
+      .from('harihara_image')
+      .remove([imageRecord.file_path]);
+
+    if (error) {
+      throw new BadRequestException('Failed to delete image from Supabase');
+    }
+
+    // Delete the image record from the database
+    await this.prisma.images.delete({
+      where: { image_id: imageId },
+    });
+
+    return { message: 'Image deleted successfully' };
   }
 }
