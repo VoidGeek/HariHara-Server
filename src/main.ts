@@ -9,6 +9,9 @@ import { SimpleHttpExceptionFilter } from './common/filters/SimpleHttpException.
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Set /api as the global prefix
+  app.setGlobalPrefix('api');
+
   app.enableCors({
     origin: 'http://localhost:3000', // Your frontend origin
     credentials: true, // Allow credentials (cookies)
@@ -31,6 +34,6 @@ async function bootstrap() {
   // Apply global response interceptor for consistent success message
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  await app.listen(3000);
+  await app.listen(4000); // Adjust the port if necessary
 }
 bootstrap();
