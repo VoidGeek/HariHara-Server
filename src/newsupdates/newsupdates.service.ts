@@ -11,9 +11,12 @@ export class NewsUpdatesService extends BaseService {
   }
 
   // Create a new news update
-  async createNewsUpdate(createNewsUpdateDto: CreateNewsUpdateDto) {
+  async createNewsUpdate(createNewsUpdateDto: CreateNewsUpdateDto, created_by: number) {
     return await this.prisma.newsUpdates.create({
-      data: createNewsUpdateDto,
+      data: {
+        ...createNewsUpdateDto,
+        created_by, // Associate the news update with the userId
+      },
     });
   }
 
@@ -38,8 +41,9 @@ export class NewsUpdatesService extends BaseService {
   async updateNewsUpdate(
     newsId: number,
     updateNewsUpdateDto: UpdateNewsUpdateDto,
+    created_by: number,
   ) {
-    // Use BaseService to ensure the news update exists before updating
+    // Ensure the news update exists before updating
     await this.handleDatabaseOperation(
       this.prisma.newsUpdates.findUnique({
         where: { news_id: newsId },
@@ -50,7 +54,10 @@ export class NewsUpdatesService extends BaseService {
 
     return await this.prisma.newsUpdates.update({
       where: { news_id: newsId },
-      data: updateNewsUpdateDto,
+      data: {
+        ...updateNewsUpdateDto,
+        created_by, // Optionally update the associated userId
+      },
     });
   }
 

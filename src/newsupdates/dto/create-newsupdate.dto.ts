@@ -1,5 +1,5 @@
 // create-newsupdate.dto.ts
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateNewsUpdateDto {
   @IsNotEmpty()
@@ -10,6 +10,6 @@ export class CreateNewsUpdateDto {
   @IsString()
   content: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   created_by?: number; // Optional field for storing the user ID
 }

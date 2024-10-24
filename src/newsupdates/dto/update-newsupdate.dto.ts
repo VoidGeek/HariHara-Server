@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class UpdateNewsUpdateDto {
   @IsOptional()
@@ -9,6 +9,6 @@ export class UpdateNewsUpdateDto {
   @IsString()
   content?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   created_by?: number; // Optional field for storing the user ID
 }

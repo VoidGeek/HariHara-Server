@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   SetMetadata,
+  Session,
+  BadRequestException,
 } from '@nestjs/common';
 import { NewsUpdatesService } from './newsupdates.service';
 import { CreateNewsUpdateDto } from './dto/create-newsupdate.dto';
@@ -24,8 +26,16 @@ export class NewsUpdatesController {
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Post()
-  async createNewsUpdate(@Body() createNewsUpdateDto: CreateNewsUpdateDto) {
-    return this.newsUpdatesService.createNewsUpdate(createNewsUpdateDto);
+  async createNewsUpdate(
+    @Body() createNewsUpdateDto: CreateNewsUpdateDto,
+    @Session() session: { user?: any },
+  ) {
+    if (!session.user) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const userId = session.user.id; // Extract userId from the session
+    return this.newsUpdatesService.createNewsUpdate(createNewsUpdateDto, userId);
   }
 
   // Get all news updates - Any authenticated user can access this route
@@ -47,8 +57,14 @@ export class NewsUpdatesController {
   async updateNewsUpdate(
     @Param('id') id: number,
     @Body() updateNewsUpdateDto: UpdateNewsUpdateDto,
+    @Session() session: { user?: any },
   ) {
-    return this.newsUpdatesService.updateNewsUpdate(id, updateNewsUpdateDto);
+    if (!session.user) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const userId = session.user.id; // Extract userId from the session
+    return this.newsUpdatesService.updateNewsUpdate(id, updateNewsUpdateDto, userId);
   }
 
   // Delete a news update by ID - Only admin users can access this route
