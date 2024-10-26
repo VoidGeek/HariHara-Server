@@ -6,7 +6,7 @@ import {
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
-import * as mime from 'mime-types';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class SupabaseService {
@@ -21,15 +21,19 @@ export class SupabaseService {
   }
 
   async uploadToSupabase(fileBuffer: Buffer, userId: number) {
-    const fileExtension = mime.extension('image/jpeg') || 'jpg';
-    const fileName = `${uuidv4()}.${fileExtension}`;
+    const fileName = `${uuidv4()}.webp`; // Save as .webp
     const filePath = `images/${fileName}`;
     const altText = this.generateAltText(fileName);
 
+    // Convert to .webp and compress using sharp
+    const compressedBuffer = await sharp(fileBuffer)
+      .webp({ quality: 80 }) // Compress with quality of 80
+      .toBuffer();
+
     const { error } = await this.supabase.storage
       .from(this.bucket)
-      .upload(filePath, fileBuffer, {
-        contentType: 'image/jpeg',
+      .upload(filePath, compressedBuffer, {
+        contentType: 'image/webp',
         upsert: true,
       });
 
@@ -48,15 +52,19 @@ export class SupabaseService {
   }
 
   async updateImage(imageId: number, fileBuffer: Buffer, userId: number) {
-    const fileExtension = mime.extension('image/jpeg') || 'jpg';
-    const fileName = `${uuidv4()}.${fileExtension}`;
+    const fileName = `${uuidv4()}.webp`; // Save as .webp
     const filePath = `images/${fileName}`;
     const altText = this.generateAltText(fileName);
 
+    // Convert to .webp and compress using sharp
+    const compressedBuffer = await sharp(fileBuffer)
+      .webp({ quality: 80 }) // Compress with quality of 80
+      .toBuffer();
+
     const { error } = await this.supabase.storage
       .from(this.bucket)
-      .upload(filePath, fileBuffer, {
-        contentType: 'image/jpeg',
+      .upload(filePath, compressedBuffer, {
+        contentType: 'image/webp',
         upsert: true,
       });
 
