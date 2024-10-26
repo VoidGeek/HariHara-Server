@@ -32,13 +32,11 @@ export class ImageController {
       throw new BadRequestException('File is required');
     }
 
-    // Access userId from session (stored during login)
-    const userId = req.session?.user?.id; // Extracts userId from session
+    const userId = req.session?.user?.id;
     if (!userId) {
       throw new BadRequestException('User not authenticated');
     }
 
-    // Call the service to handle the upload, passing the userId
     return this.supabaseService.uploadToSupabase(file.buffer, userId);
   }
 
@@ -56,13 +54,11 @@ export class ImageController {
       throw new BadRequestException('File is required');
     }
 
-    // Access userId from session
     const userId = req.session?.user?.id;
     if (!userId) {
       throw new BadRequestException('User not authenticated');
     }
 
-    // Call the service to handle the update, passing the userId
     return this.supabaseService.updateImage(imageId, file.buffer, userId);
   }
 
@@ -71,24 +67,12 @@ export class ImageController {
   @Delete(':imageId')
   @UseGuards(SessionAuthGuard)
   async deleteImage(@Param('imageId') imageId: number, @Req() req: any) {
-    // Access userId from session
     const userId = req.session?.user?.id;
     if (!userId) {
       throw new BadRequestException('User not authenticated');
     }
 
-    // Call the service to handle the deletion
     return this.supabaseService.deleteImage(imageId, userId);
-  }
-
-  @Get('signed-url/:imageId')
-  async getSignedUrl(@Param('imageId') imageId: number) {
-    const image = await this.supabaseService.getImageById(imageId);
-    if (!image) {
-      throw new BadRequestException('Image not found');
-    }
-    const signedUrl = await this.supabaseService.generateSignedUrl(image.file_path);
-    return { signed_url: signedUrl };
   }
 
   @Get('batch')
@@ -97,15 +81,10 @@ export class ImageController {
     const pageNum = parseInt(page, 10);
 
     const images = await this.supabaseService.getImagesBatch(limitNum, pageNum);
-    const imagesWithSignedUrls = await Promise.all(
-      images.map(async (image) => {
-        const signedUrl = await this.supabaseService.generateSignedUrl(image.file_path);
-        return {
-          ...image,
-          signed_url: signedUrl,
-        };
-      }),
-    );
-    return { images: imagesWithSignedUrls };
+    const imagesWithPublicUrls = images.map((image) => ({
+      ...image,
+      public_url: this.supabaseService.getPublicUrl(image.file_path),
+    }));
+    return { images: imagesWithPublicUrls };
   }
 }
