@@ -35,7 +35,10 @@ export class NewsUpdatesController {
     }
 
     const userId = session.user.id; // Extract userId from the session
-    return this.newsUpdatesService.createNewsUpdate(createNewsUpdateDto, userId);
+    return this.newsUpdatesService.createNewsUpdate(
+      createNewsUpdateDto,
+      userId,
+    );
   }
 
   // Get all news updates - Any authenticated user can access this route
@@ -64,7 +67,11 @@ export class NewsUpdatesController {
     }
 
     const userId = session.user.id; // Extract userId from the session
-    return this.newsUpdatesService.updateNewsUpdate(id, updateNewsUpdateDto, userId);
+    return this.newsUpdatesService.updateNewsUpdate(
+      id,
+      updateNewsUpdateDto,
+      userId,
+    );
   }
 
   // Delete a news update by ID - Only admin users can access this route

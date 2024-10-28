@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { SevasService } from './sevas.service';
 import { SevasController } from './sevas.controller';
+import { SevasService } from './sevas.service';
 
 @Module({
-  providers: [SevasService],
   controllers: [SevasController],
+  providers: [SevasService],
 })
-export class SevaModule {}
+export class SevasModule {}
