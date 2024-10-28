@@ -49,11 +49,13 @@ model Images {
 
 
 model Sevas {
-  seva_id      Int            @id @default(autoincrement())
-  name         String
-  description  String
-  base_price   Decimal
-  OrderDetails OrderDetails[]
+  seva_id             Int            @id @default(autoincrement())
+  name                String
+  description         String
+  name_kannada        String
+  description_kannada String
+  base_price          Decimal
+  OrderDetails        OrderDetails[]
 }
 
 model Orders {
