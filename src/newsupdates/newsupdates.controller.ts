@@ -18,7 +18,7 @@ import { SessionAuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 
 @UseGuards(SessionAuthGuard) // Apply SessionAuthGuard globally for the controller
-@Controller('news-updates')
+@Controller('newsupdates')
 export class NewsUpdatesController {
   constructor(private readonly newsUpdatesService: NewsUpdatesService) {}
 
@@ -28,7 +28,7 @@ export class NewsUpdatesController {
   @Post()
   async createNewsUpdate(
     @Body() createNewsUpdateDto: CreateNewsUpdateDto,
-    @Session() session: { user?: any },
+    @Session() session: { user?: { id: number } }, // Specify user type for clarity
   ) {
     if (!session.user) {
       throw new BadRequestException('User not authenticated');
@@ -60,7 +60,7 @@ export class NewsUpdatesController {
   async updateNewsUpdate(
     @Param('id') id: number,
     @Body() updateNewsUpdateDto: UpdateNewsUpdateDto,
-    @Session() session: { user?: any },
+    @Session() session: { user?: { id: number } }, // Specify user type for clarity
   ) {
     if (!session.user) {
       throw new BadRequestException('User not authenticated');

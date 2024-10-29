@@ -11,7 +11,10 @@ export class NewsUpdatesService extends BaseService {
   }
 
   // Create a new news update
-  async createNewsUpdate(createNewsUpdateDto: CreateNewsUpdateDto, created_by: number) {
+  async createNewsUpdate(
+    createNewsUpdateDto: CreateNewsUpdateDto,
+    created_by: number,
+  ) {
     return await this.prisma.newsUpdates.create({
       data: {
         ...createNewsUpdateDto,

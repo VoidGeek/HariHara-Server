@@ -136,11 +136,13 @@ model Contacts {
 }
 
 model NewsUpdates {
-  news_id    Int      @id @default(autoincrement())
-  title      String
-  content    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  created_by Int?
-  User       Users?   @relation(fields: [created_by], references: [user_id])
+  news_id          Int      @id @default(autoincrement())
+  title            String
+  content          String
+  title_kannada    String
+  content_kannada  String
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  created_by       Int?
+  User             Users?   @relation(fields: [created_by], references: [user_id])
 }
