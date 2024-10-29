@@ -15,7 +15,6 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { SessionAuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 
-@UseGuards(SessionAuthGuard) // Apply SessionAuthGuard globally for the controller
 @Controller('contacts')
 export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
@@ -27,6 +26,7 @@ export class ContactsController {
   }
 
   // Get all contacts - Only admin users can access this route
+  @UseGuards(SessionAuthGuard) // Apply SessionAuthGuard globally for the controller
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Get()
@@ -35,6 +35,7 @@ export class ContactsController {
   }
 
   // Get a contact by ID - Only admin users can access this route
+  @UseGuards(SessionAuthGuard) // Apply SessionAuthGuard globally for the controller
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Get(':id')
@@ -43,6 +44,7 @@ export class ContactsController {
   }
 
   // Update a contact by ID - Only admin users can access this route
+  @UseGuards(SessionAuthGuard) // Apply SessionAuthGuard globally for the controller
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Patch(':id')
@@ -54,6 +56,7 @@ export class ContactsController {
   }
 
   // Delete a contact by ID - Only admin users can access this route
+  @UseGuards(SessionAuthGuard) // Apply SessionAuthGuard globally for the controller
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Delete(':id')
