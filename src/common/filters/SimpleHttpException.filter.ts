@@ -11,16 +11,41 @@ import { Request, Response } from 'express';
 export class SimpleHttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(SimpleHttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const status = exception.getStatus ? exception.getStatus() : 500;
+    let status = 500;
+    let errorMessage: string = 'Unexpected error occurred'; // Default error message
 
-    // Check if the exception message is an array (DTO validation errors) or a string
-    const errorMessage = Array.isArray(exception.getResponse()['message'])
-      ? exception.getResponse()['message']
-      : exception.message || 'Unexpected error occurred';
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      const exceptionResponse = exception.getResponse();
+
+      // Check for specific error messages
+      if (typeof exceptionResponse === 'string') {
+        errorMessage = exceptionResponse; // Handle string response
+      } else if (exceptionResponse && exceptionResponse['message']) {
+        // Handle structured error response
+        errorMessage = Array.isArray(exceptionResponse['message'])
+          ? exceptionResponse['message'].join(', ')
+          : exceptionResponse['message'];
+      }
+    } else {
+      // Check if the error message indicates corrupt JPEG data
+      if (
+        exception instanceof Error &&
+        exception.message.includes('Corrupt JPEG data')
+      ) {
+        errorMessage =
+          'Uploaded image is corrupt. Please upload a valid image file.';
+        status = 400; // Set a specific status code for client error
+      } else {
+        // Handle non-HttpException errors
+        this.logger.error(`Non-HTTP exception: ${exception}`);
+        console.error(`Non-HTTP exception: ${exception}`); // Log to Postman console
+      }
+    }
 
     // Log the error details
     this.logger.error(
@@ -28,8 +53,7 @@ export class SimpleHttpExceptionFilter implements ExceptionFilter {
         `\t- HTTP Method: ${request.method}\n` +
         `\t- URL: ${request.url}\n` +
         `\t- Status Code: ${status}\n` +
-        `\t- Message: ${Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage}\n` +
-        `\t- Stack Trace:\n${this.formatStackTrace(exception.stack)}\n`,
+        `\t- Message: ${errorMessage}\n`,
     );
 
     const errorResponse = {
@@ -37,17 +61,9 @@ export class SimpleHttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      // Send message as it is, array or string
       message: errorMessage,
     };
 
     response.status(status).json(errorResponse);
-  }
-
-  private formatStackTrace(stack: string): string {
-    return stack
-      .split('\n')
-      .map((line, index) => `\t\t${index === 0 ? '🔴 ' : '↳ '}${line.trim()}`)
-      .join('\n');
   }
 }
