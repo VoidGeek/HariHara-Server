@@ -10,7 +10,6 @@ import {
   UseGuards,
   SetMetadata,
   BadRequestException,
-  Session,
 } from '@nestjs/common';
 import { SevaFormService } from './sevaform.service';
 import { CreateSevaFormDto } from './dto/create-sevaform.dto';
@@ -23,14 +22,7 @@ export class SevaFormController {
 
   // Save the seva form details
   @Post()
-  async createSevaForm(
-    @Body() createSevaFormDto: CreateSevaFormDto,
-    @Session() session: { user?: any },
-  ) {
-    if (!session.user) {
-      throw new BadRequestException('User not authenticated');
-    }
-
+  async createSevaForm(@Body() createSevaFormDto: CreateSevaFormDto) {
     // Optional: Validate that mobile number and confirmation match
     if (
       createSevaFormDto.mobileNumber !==
@@ -45,66 +37,43 @@ export class SevaFormController {
     return result;
   }
 
-  // Get all Seva forms or filter by fields
-  @UseGuards(SessionAuthGuard)
-  @UseGuards(RolesGuard)
+  // Get all Seva forms or filter by fields (Admin access only)
+  @UseGuards(SessionAuthGuard, RolesGuard)
   @SetMetadata('role', 'Admin')
   @Get()
   async getSevaForms(
     @Query()
-    query: { id?: number; name?: string; phoneNumber?: string; date?: string },
-    @Session() session: { user?: any },
+    query: {
+      id?: number;
+      name?: string;
+      phoneNumber?: string;
+      date?: string;
+    },
   ) {
-    // Check if the user has admin privileges
-    if (!session.user || !session.user.isAdmin) {
-      throw new BadRequestException('User not authorized');
-    }
-
     return this.sevaFormService.getSevaForms(query); // Pass the query object to the service
   }
 
-  // Retrieve a booking by ID
-  @UseGuards(SessionAuthGuard)
-  @UseGuards(RolesGuard)
+  // Retrieve a booking by ID (Admin access only)
+  @UseGuards(SessionAuthGuard, RolesGuard)
   @SetMetadata('role', 'Admin')
   @Get(':id')
-  async getBookingById(
-    @Param('id') id: number,
-    @Session() session: { user?: any },
-  ) {
-    if (!session.user || !session.user.isAdmin) {
-      throw new BadRequestException('User not authorized');
-    }
-
+  async getBookingById(@Param('id') id: number) {
     return this.sevaFormService.getBookingById(id);
   }
 
-  // Delete all Seva forms - Admin access only
-  @UseGuards(SessionAuthGuard)
-  @UseGuards(RolesGuard)
+  // Delete all Seva forms (Admin access only)
+  @UseGuards(SessionAuthGuard, RolesGuard)
   @SetMetadata('role', 'Admin')
   @Delete()
-  async deleteAllSevaForms(@Session() session: { user?: any }) {
-    if (!session.user || !session.user.isAdmin) {
-      throw new BadRequestException('User not authorized');
-    }
-
+  async deleteAllSevaForms() {
     return this.sevaFormService.deleteAllSevaForms();
   }
 
-  // Delete a specific Seva form by ID - Admin access only
-  @UseGuards(SessionAuthGuard)
-  @UseGuards(RolesGuard)
+  // Delete a specific Seva form by ID (Admin access only)
+  @UseGuards(SessionAuthGuard, RolesGuard)
   @SetMetadata('role', 'Admin')
   @Delete(':id')
-  async deleteSevaFormById(
-    @Param('id') id: number,
-    @Session() session: { user?: any },
-  ) {
-    if (!session.user || !session.user.isAdmin) {
-      throw new BadRequestException('User not authorized');
-    }
-
+  async deleteSevaFormById(@Param('id') id: number) {
     return this.sevaFormService.deleteSevaFormById(id);
   }
 }
