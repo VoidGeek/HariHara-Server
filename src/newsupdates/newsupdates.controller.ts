@@ -17,12 +17,13 @@ import { UpdateNewsUpdateDto } from './dto/update-newsupdate.dto';
 import { SessionAuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 
-@UseGuards(SessionAuthGuard) // Apply SessionAuthGuard globally for the controller
+// Apply SessionAuthGuard globally for the controller
 @Controller('newsupdates')
 export class NewsUpdatesController {
   constructor(private readonly newsUpdatesService: NewsUpdatesService) {}
 
   // Create a new news update - Only admin users can create news updates
+  @UseGuards(SessionAuthGuard)
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Post()
@@ -54,6 +55,7 @@ export class NewsUpdatesController {
   }
 
   // Update a news update by ID - Only admin users can access this route
+  @UseGuards(SessionAuthGuard)
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Patch(':id')
@@ -75,6 +77,7 @@ export class NewsUpdatesController {
   }
 
   // Delete a news update by ID - Only admin users can access this route
+  @UseGuards(SessionAuthGuard)
   @UseGuards(RolesGuard)
   @SetMetadata('role', 'Admin') // Require Admin role for this route
   @Delete(':id')
