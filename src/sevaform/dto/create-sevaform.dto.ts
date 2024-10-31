@@ -1,5 +1,5 @@
 // src/seva-form/dto/create-seva-form.dto.ts
-import { IsNotEmpty, IsString, IsNumber, IsDate } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsDateString } from 'class-validator';
 
 export class CreateSevaFormDto {
   @IsNotEmpty()
@@ -26,7 +26,7 @@ export class CreateSevaFormDto {
   mobileNumberConfirmation: string;
 
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   date: Date;
 
   @IsNotEmpty()
