@@ -22,7 +22,6 @@ export class SevaFormController {
   constructor(private readonly sevaFormService: SevaFormService) {}
 
   // Save the seva form details
-  @UseGuards(SessionAuthGuard)
   @Post()
   async createSevaForm(
     @Body() createSevaFormDto: CreateSevaFormDto,
