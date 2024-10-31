@@ -6,10 +6,10 @@ import {
   Delete,
   Body,
   Query,
-  Param,
   UseGuards,
   SetMetadata,
   BadRequestException,
+  Param,
 } from '@nestjs/common';
 import { SevaFormService } from './sevaform.service';
 import { CreateSevaFormDto } from './dto/create-sevaform.dto';
@@ -23,7 +23,7 @@ export class SevaFormController {
   // Save the seva form details
   @Post()
   async createSevaForm(@Body() createSevaFormDto: CreateSevaFormDto) {
-    // Optional: Validate that mobile number and confirmation match
+    // Validate that mobile number and confirmation match
     if (
       createSevaFormDto.mobileNumber !==
       createSevaFormDto.mobileNumberConfirmation
@@ -37,11 +37,19 @@ export class SevaFormController {
     return result;
   }
 
-  // Get all Seva forms or filter by fields (Admin access only)
+  // Get all Seva forms (Admin access only)
   @UseGuards(SessionAuthGuard, RolesGuard)
   @SetMetadata('role', 'Admin')
   @Get()
-  async getSevaForms(
+  async getAllSevaForms() {
+    return this.sevaFormService.getAllSevaForms(); // Call the service to get all Seva forms
+  }
+
+  // Get Seva forms by parameters (Admin access only)
+  @UseGuards(SessionAuthGuard, RolesGuard)
+  @SetMetadata('role', 'Admin')
+  @Get('filter')
+  async getSevaFormsByParams(
     @Query()
     query: {
       id?: number;
@@ -50,15 +58,7 @@ export class SevaFormController {
       date?: string;
     },
   ) {
-    return this.sevaFormService.getSevaForms(query); // Pass the query object to the service
-  }
-
-  // Retrieve a booking by ID (Admin access only)
-  @UseGuards(SessionAuthGuard, RolesGuard)
-  @SetMetadata('role', 'Admin')
-  @Get(':id')
-  async getBookingById(@Param('id') id: number) {
-    return this.sevaFormService.getBookingById(id);
+    return this.sevaFormService.getSevaFormsByParams(query); // Call the service to get filtered Seva forms
   }
 
   // Delete all Seva forms (Admin access only)

@@ -44,31 +44,23 @@ export class SevaFormService extends BaseService {
     return { id: createdSevaForm.id };
   }
 
-  // Retrieve all Seva forms or filter by fields
-  async getSevaForms(filter: any) {
+  // Retrieve all Seva forms
+  async getAllSevaForms() {
+    return this.prisma.sevaForm.findMany();
+  }
+
+  // Retrieve Seva forms by parameters
+  async getSevaFormsByParams(filter: any) {
     return this.prisma.sevaForm.findMany({
       where: {
         OR: [
           { id: filter.id }, // Assuming id is a number
           { name: { contains: filter.name } }, // Assuming name is a string
-          { mobileNumber: filter.mobileNumber }, // Assuming phoneNumber is a string
+          { mobileNumber: filter.phoneNumber }, // Assuming phoneNumber is a string
           { date: filter.date ? new Date(filter.date) : undefined }, // Assuming date is a Date
         ],
       },
     });
-  }
-
-  // Retrieve a booking by ID
-  async getBookingById(id: number) {
-    const booking = await this.prisma.sevaForm.findUnique({
-      where: { id },
-    });
-
-    if (!booking) {
-      throw new NotFoundException(`Booking with ID ${id} not found`);
-    }
-
-    return booking;
   }
 
   // Delete all Seva forms
