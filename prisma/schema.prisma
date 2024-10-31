@@ -56,6 +56,9 @@ model Sevas {
   description_kannada String
   base_price          Decimal
   OrderDetails        OrderDetails[]
+
+  // Define the relation to SevaForm with the relation name "sevaForms"
+  sevaForms           SevaForm[]     @relation("SevaForms")
 }
 
 model Orders {
@@ -145,4 +148,21 @@ model NewsUpdates {
   updated_at       DateTime @updatedAt
   created_by       Int?
   User             Users?   @relation(fields: [created_by], references: [user_id])
+}
+
+model SevaForm {
+  id                     Int       @id @default(autoincrement())
+  name                   String
+  nakshathra             String
+  rashi                  String
+  gotra                  String?   // Optional field
+  mobileNumber           String
+  mobileNumberConfirmation String
+  date                   DateTime
+  sevaId                 Int
+
+  createdAt              DateTime @default(now())
+
+  // Define the relation to Sevas, using the same relation name
+  seva                   Sevas     @relation("SevaForms", fields: [sevaId], references: [seva_id])
 }

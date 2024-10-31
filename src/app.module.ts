@@ -14,6 +14,7 @@ import { NewsupdatesModule } from './newsupdates/newsupdates.module';
 import { SevasModule } from './sevas/sevas.module';
 
 import { LoggerMiddleware } from './middleware/logger.middleware'; // Import the logger middleware
+import { SevaformModule } from './sevaform/sevaform.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware'; // Import the
     AdminModule,
     NewsupdatesModule,
     SevasModule,
+    SevaformModule,
   ],
 })
 export class AppModule implements NestModule {
