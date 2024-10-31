@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ParseIdPipe } from './common/pipes/parse-id.pipe'; // Import your ParseIdPipe
-import { SimpleHttpExceptionFilter } from './common/filters/SimpleHttpException.filter';
+import { SimpleHttpExceptionFilter } from './common/filters/SimpleException.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
