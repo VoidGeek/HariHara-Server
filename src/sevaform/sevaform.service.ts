@@ -44,9 +44,17 @@ export class SevaFormService extends BaseService {
     return { id: createdSevaForm.id };
   }
 
-  // Retrieve all Seva forms
+  // Retrieve all Seva forms, including Seva name
   async getAllSevaForms() {
-    return this.prisma.sevaForm.findMany();
+    return this.prisma.sevaForm.findMany({
+      include: {
+        seva: {
+          select: {
+            name: true, // Fetch only the 'name' field of the related 'Seva'
+          },
+        },
+      },
+    });
   }
 
   // Retrieve Seva forms by parameters
@@ -59,6 +67,13 @@ export class SevaFormService extends BaseService {
           { mobileNumber: filter.phoneNumber }, // Assuming phoneNumber is a string
           { date: filter.date ? new Date(filter.date) : undefined }, // Assuming date is a Date
         ],
+      },
+      include: {
+        seva: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
   }
