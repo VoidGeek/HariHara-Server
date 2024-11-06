@@ -1,5 +1,14 @@
 // src/seva-form/dto/create-seva-form.dto.ts
-import { IsNotEmpty, IsString, IsNumber, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsDateString,
+  ValidateIf,
+} from 'class-validator';
+import { IsInternationalPhone } from '../../common/decorators/IsInternationalPhone';
+import { MatchesField } from '../../common/decorators/MatchesField';
+import { ValidationMessages } from '../../common/constants/validation-message';
 
 export class CreateSevaFormDto {
   @IsNotEmpty()
@@ -14,15 +23,19 @@ export class CreateSevaFormDto {
   @IsString()
   rashi: string;
 
-  @IsString() // Optional field
+  @ValidateIf((o) => o.gotra !== undefined)
+  @IsString()
   gotra?: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsInternationalPhone()
   mobileNumber: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsInternationalPhone()
+  @MatchesField('mobileNumber', {
+    message: ValidationMessages.mobileNumberConfirmation,
+  })
   mobileNumberConfirmation: string;
 
   @IsNotEmpty()
