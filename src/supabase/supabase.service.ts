@@ -7,6 +7,7 @@ import {
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ImagePool } from '@squoosh/lib';
 
 @Injectable()
 export class SupabaseService {
@@ -92,19 +93,18 @@ export class SupabaseService {
 
   private async compressImage(fileBuffer: Buffer): Promise<Buffer> {
     try {
-      const imagemin = (await import('imagemin')).default;
-      const imageminWebp = (await import('imagemin-webp')).default;
+      const imagePool = new ImagePool(1); // Use 1 thread to avoid unnecessary overhead
+      const image = imagePool.ingestImage(fileBuffer);
 
-      const compressedBuffer = await imagemin.buffer(fileBuffer, {
-        plugins: [
-          imageminWebp({
-            quality: 80,
-            lossless: false,
-          }),
-        ],
+      await image.encode({
+        webp: { quality: 80 }, // Adjust quality as needed
       });
 
-      return compressedBuffer;
+      const { binary } = await image.encodedWith.webp;
+
+      await imagePool.close(); // Free up resources
+
+      return Buffer.from(binary); // Convert Uint8Array to Buffer
     } catch (error) {
       throw new Error(`Image compression failed: ${error.message}`);
     }
