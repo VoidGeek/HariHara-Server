@@ -40,9 +40,18 @@ model Images {
   modified_by   Int?      // Optional relation to Users
   modified_at   DateTime  @updatedAt
 
-  // Relations to Users for created_by and modified_by
   createdBy     Users     @relation("createdByRelation", fields: [created_by], references: [user_id])
   modifiedBy    Users?    @relation("modifiedByRelation", fields: [modified_by], references: [user_id])
+
+  Gallery       Gallery[]
+  NewsImages    NewsImages[]
+}
+
+model Gallery {
+  gallery_id Int      @id @default(autoincrement())
+  title      String
+  image_id   Int
+  Images     Images   @relation(fields: [image_id], references: [image_id])
 }
 
 model Sevas {
@@ -78,6 +87,15 @@ model NewsUpdates {
   updated_at       DateTime @updatedAt
   created_by       Int?
   User             Users?   @relation(fields: [created_by], references: [user_id])
+  NewsImages       NewsImages[]
+}
+
+model NewsImages {
+  id        Int     @id @default(autoincrement())
+  news_id   Int
+  image_id  Int
+  NewsUpdates NewsUpdates @relation(fields: [news_id], references: [news_id])
+  Images    Images  @relation(fields: [image_id], references: [image_id])
 }
 
 model SevaForm {
