@@ -1,12 +1,12 @@
 import {
   Injectable,
+  HttpException,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
-import * as sharp from 'sharp';
 
 @Injectable()
 export class SupabaseService {
@@ -25,10 +25,10 @@ export class SupabaseService {
     const filePath = `images/${fileName}`;
     const altText = this.generateAltText(fileName);
 
-    // Convert to .webp and compress using sharp
-    const compressedBuffer = await sharp(fileBuffer)
-      .webp({ quality: 80 }) // Compress with quality of 80
-      .toBuffer();
+    // Convert to .webp and compress using gm
+    const compressedBuffer = await this.compressImage(fileBuffer);
+
+    console.log('Compressed Buffer Size:', compressedBuffer.length); // Log compressed file details
 
     const { error } = await this.supabase.storage
       .from(this.bucket)
@@ -38,8 +38,17 @@ export class SupabaseService {
       });
 
     if (error) {
-      throw new BadRequestException('Failed to upload image to Supabase');
+      throw new HttpException(
+        {
+          statusCode: error.statusCode || 400,
+          message: error.message || 'Failed to upload image to Supabase',
+          details: error, // Attach full error details for debugging
+        },
+        error.statusCode || 400,
+      );
     }
+
+    console.log('File uploaded to Supabase:', filePath); // Log success details
 
     return this.prisma.images.create({
       data: {
@@ -56,10 +65,8 @@ export class SupabaseService {
     const filePath = `images/${fileName}`;
     const altText = this.generateAltText(fileName);
 
-    // Convert to .webp and compress using sharp
-    const compressedBuffer = await sharp(fileBuffer)
-      .webp({ quality: 80 }) // Compress with quality of 80
-      .toBuffer();
+    // Convert to .webp and compress using gm
+    const compressedBuffer = await this.compressImage(fileBuffer);
 
     const { error } = await this.supabase.storage
       .from(this.bucket)
@@ -83,6 +90,21 @@ export class SupabaseService {
     });
   }
 
+  private async compressImage(fileBuffer: Buffer): Promise<Buffer> {
+    const gm = (await import('gm')).subClass({ imageMagick: true }); // Dynamically import gm
+    return new Promise((resolve, reject) => {
+      gm(fileBuffer)
+        .setFormat('webp') // Convert to webp
+        .quality(80) // Set quality to 80
+        .toBuffer((err, buffer) => {
+          if (err) {
+            return reject(new Error(`Image processing failed: ${err.message}`));
+          }
+          resolve(buffer);
+        });
+    });
+  }
+
   private generateAltText(fileName: string): string {
     const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, '');
     return nameWithoutExtension.replace(/[_-]/g, ' ');
@@ -100,7 +122,7 @@ export class SupabaseService {
     });
   }
 
-  async deleteImage(imageId: number, userId: number) {
+  async deleteImage(imageId: number) {
     const imageRecord = await this.prisma.images.findUnique({
       where: { image_id: imageId },
     });

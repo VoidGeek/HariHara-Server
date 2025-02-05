@@ -72,7 +72,7 @@ export class ImageController {
       throw new BadRequestException('User not authenticated');
     }
 
-    return this.supabaseService.deleteImage(imageId, userId);
+    return this.supabaseService.deleteImage(imageId);
   }
 
   @Get('batch')

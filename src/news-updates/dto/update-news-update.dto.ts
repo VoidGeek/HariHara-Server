@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsOptional, IsArray, IsNumber, IsString } from 'class-validator';
 
 export class UpdateNewsUpdateDto {
   @IsOptional()
@@ -18,5 +18,7 @@ export class UpdateNewsUpdateDto {
   content_kannada?: string;
 
   @IsOptional()
-  created_by?: number; // Optional field for storing the user ID
+  @IsArray()
+  @IsNumber({}, { each: true }) // Validate each item in the array as a number
+  imageIds?: number[];
 }

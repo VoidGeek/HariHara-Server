@@ -10,11 +10,12 @@ import { ProfileModule } from './profile/profile.module';
 import { RolesModule } from './seeds/seeds.module';
 import { AdminModule } from './admin/admin.module';
 import { getSessionConfig } from './common/config/session.config'; // Import the session config utility
-import { NewsupdatesModule } from './newsupdates/newsupdates.module';
+import { NewsupdatesModule } from './news-updates/news-updates.module';
 import { SevasModule } from './sevas/sevas.module';
 
 import { LoggerMiddleware } from './middleware/logger.middleware'; // Import the logger middleware
 import { SevaformModule } from './sevaform/sevaform.module';
+import { GalleryModule } from './gallery/gallery.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SevaformModule } from './sevaform/sevaform.module';
     NewsupdatesModule,
     SevasModule,
     SevaformModule,
+    GalleryModule,
   ],
 })
 export class AppModule implements NestModule {
