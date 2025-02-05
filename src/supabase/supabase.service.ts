@@ -7,6 +7,8 @@ import {
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
+import imagemin from 'imagemin';
+import imageminWebp from 'imagemin-webp';
 
 @Injectable()
 export class SupabaseService {
@@ -91,18 +93,19 @@ export class SupabaseService {
   }
 
   private async compressImage(fileBuffer: Buffer): Promise<Buffer> {
-    const gm = (await import('gm')).subClass({ imageMagick: true }); // Dynamically import gm
-    return new Promise((resolve, reject) => {
-      gm(fileBuffer)
-        .setFormat('webp') // Convert to webp
-        .quality(80) // Set quality to 80
-        .toBuffer((err, buffer) => {
-          if (err) {
-            return reject(new Error(`Image processing failed: ${err.message}`));
-          }
-          resolve(buffer);
-        });
-    });
+    try {
+      const compressedBuffer = await imagemin.buffer(fileBuffer, {
+        plugins: [
+          imageminWebp({
+            quality: 80, // Set the quality level
+            lossless: false, // Enable lossy compression for smaller file size
+          }),
+        ],
+      });
+      return compressedBuffer;
+    } catch (error) {
+      throw new Error(`Image compression failed: ${error.message}`);
+    }
   }
 
   private generateAltText(fileName: string): string {
