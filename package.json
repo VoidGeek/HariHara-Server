@@ -36,6 +36,7 @@
     "gm": "^1.25.0",
     "imagemin": "^9.0.0",
     "imagemin-webp": "^8.0.0",
+    "jimp": "^0.22.10",
     "mime-types": "^2.1.35",
     "nestjs-cookie-session": "^3.0.1",
     "passport": "^0.7.0",
