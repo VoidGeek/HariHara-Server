@@ -7,7 +7,8 @@ import {
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
-import sharp from 'sharp';
+import * as Jimp from 'jimp';
+
 
 @Injectable()
 export class SupabaseService {
@@ -91,17 +92,17 @@ export class SupabaseService {
     });
   }
 
-  private async compressImage(fileBuffer: Buffer): Promise<Buffer> {
+   async compressImage(fileBuffer: Buffer): Promise<Buffer> {
     try {
-      const compressedImage = await sharp(fileBuffer)
-        .webp({ quality: 80 }) // Adjust quality as needed
-        .toBuffer(); // Convert output to a Buffer
+      const image = await Jimp.read(fileBuffer);
+      const compressedImage = await image.quality(80).getBufferAsync(Jimp.MIME_PNG);
 
       return compressedImage;
     } catch (error) {
       throw new Error(`Image compression failed: ${error.message}`);
     }
   }
+  
 
   private generateAltText(fileName: string): string {
     const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, '');
